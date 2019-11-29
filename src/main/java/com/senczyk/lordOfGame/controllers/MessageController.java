@@ -5,15 +5,13 @@ import java.util.*;
 
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
+
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,9 +22,6 @@ import com.senczyk.lordOfGame.entities.*;
 @CrossOrigin
 @RestController
 public class MessageController {
-
-	private List<PlayerEntity> playerList;
-	private List<GameEntity> startedGames;
 	
 	@Autowired
 	private PlayerListRepository playerListRepo;
@@ -37,34 +32,42 @@ public class MessageController {
 
 	Gson gson = new Gson();
 	
-	@PostConstruct
-	private void initiation() {
-		playerList = playerListRepo.findAll();
-		startedGames = new ArrayList<>();
-		// startedGames from DB
-		
-	}
 	@MessageMapping("/startGame")
 	public String startGameAtServer() {
-		
+		//if get player2 player 1 pair start
+		// if get "reject" return 0;
 		return "";
 	}
 	
+	@MessageMapping("/answer")
+	@SendTo("/ws/listener")
+	public void sendAnswer(@RequestBody String data) {
+		Type listType = new TypeToken<ArrayList<PlayerEntity>>(){}.getType();
+		List<PlayerEntity> temp = gson.fromJson(data, listType);
+		System.out.println("/answer "+data);
+		// check opponent decision
+		if( temp.get(1).getName().contentEquals("reject") ) {
+			msgTemplate.convertAndSend("/ws/listener", data );
+			System.out.println("Usuwam zapytanie");
+		} else {
+			System.out.println("Rozpoczynam gre");
+			// start new game
+		}
+	}
+	
 	@MessageMapping("/askPlayer")
-	@SendTo("/ws/askPlayer")
-	public String askPlayerToPlay(@RequestBody String data, String choise) {
+	public void askPlayerToPlay(@RequestBody String data) {
 
 		Type listType = new TypeToken<ArrayList<PlayerEntity>>(){}.getType();
 		List<PlayerEntity> temp = gson.fromJson(data, listType);
 		
 		if(temp.get(0).getName().isEmpty() && temp.get(1).getName().isEmpty()) {
 			System.out.println("Message error: no players");
-			return gson.toJson("Message error: no players");
+			//msgTemplate.convertAndSend("/ws/listener", gson.toJson(temp) );
 		} else {
+			//wysyłam pytanie do 2go gracza
+			System.out.println("Wysylam do gracza "+temp.get(1).getName());
 			msgTemplate.convertAndSend("/ws/listener", gson.toJson(temp) );
-			
-			//return YES/NO
-			return gson.toJson("asking and Starting new game...");
 		}
 	}
 	
@@ -76,7 +79,7 @@ public class MessageController {
 		final String name = new String(players.getName());
 		// get in message a names of players
 		System.out.println("Looking a game for "+name+" player...");
-		List<GameEntity> result = startedGames.stream().filter( game -> 
+		List<GameEntity> result = gamesRepo.findAll().stream().filter( game -> 
 									game.getPlayer1().getName().contentEquals(name) ||
 									game.getPlayer2().getName().contentEquals(name) )
 								.collect(Collectors.toList());

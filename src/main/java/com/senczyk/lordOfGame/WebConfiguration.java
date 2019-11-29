@@ -12,7 +12,7 @@ public class WebConfiguration implements WebSocketMessageBrokerConfigurer {
 	
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
-		registry.addEndpoint("/getGame", "/getPlayers").withSockJS(); // <- filter methods via @MessageMapping("/get/Board1") annotation
+		registry.addEndpoint("/getGame", "/getPlayers", "/answer", "/startGame", "/askPlayer").withSockJS(); // <- filter methods via @MessageMapping("/get/Board1") annotation
 	}
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry registry) {

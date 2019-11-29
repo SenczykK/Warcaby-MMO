@@ -1,14 +1,12 @@
 
 document.getElementById("answer").style.display = "none";
+document.getElementById("askPlayer").style.display = "none";
 let playerList = [];
 
 let playerName = window.sessionStorage.getItem("playerSessionName");
 document.getElementById("playerSessionName").innerHTML = playerName;
 
 let dateNow = 0;
-//setInterval( dottedAnimation, 2000);
-// ustawiam pobieranie listy graczy dostepnych
-
 
 let stompClientWS = Stomp.client("ws://localhost:8080/getPlayers/websocket");
 stompClientWS.connect(
@@ -21,18 +19,32 @@ stompClientWS.connect(
 				
 				//console.log(JSON.parse(messageOutput.body));
 			});
+			// Listener do decyzji do nowej gry
 			stompClientWS.subscribe('/ws/listener', function(messageOutput) {
 				let players = JSON.parse(messageOutput.body);
-				console.log(players)
-				if( playerName == players[0] ){
-					console.log("chcesz zagrac z "+players[1]+" ?");
+				console.log("Dane /listener "+players[0].name+" "+players[1].name);
+				if( (players[1].name == "reject" && players[0].name == playerName)
+					|| (players[1].name == playerName && players[0].name == "reject")){
+					console.log("zapytanie odrzucone");
+					document.getElementById("askPlayer").style.display = "none";
+					document.getElementById("askPlayer").style.display = "none";
+					document.getElementById("listOfPlayers").style.display = "block";
+	                document.getElementById("answer").style.display = "none"; 
+	                // TODO subscribe /ws/askPlayer
+					return 0;
 				}
-				//console.log(JSON.parse(messageOutput.body));
+				if( playerName == players[1].name ){
+					console.log("chcesz zagrac z "+players[0].name+" ?");
+					document.getElementById("askPlayer").style.display = "block";
+					document.getElementById("opponent").innerHTML = players[0].name;
+					document.getElementById("opponent").style.weight = "bold";
+				}
 			});
 		}
 );
 
 let refreshPlayers = setInterval( () => {
+	if( document.getElementById("askPlayer").style.display == "block") return 0;
 	if( stompClientWS.connect ){
 		stompClientWS.send("/getPlayers", {"playerName":playerName}, "");
 	}
@@ -49,7 +61,7 @@ let refreshPlayers = setInterval( () => {
         listenerBuilder();
     }
 
-
+let dottedAnim;
 let playerListeners = [];
 function listenerBuilder(){
     playerListeners = [];
@@ -62,7 +74,8 @@ function listenerBuilder(){
                 document.getElementById("answer").style.display = "block"; 
                 // zatrzymaj pobieranie graczy
                 clearTimeout(refreshPlayers);
-                
+                // TODO unsubscribe /ws/askPlayer
+                dottedAnim = setInterval( dottedAnimation, 2000);
                 // wyslij do serwera, aby odpytac gracza
                 stompClientWS.send("/askPlayer",
                     	{}, JSON.stringify([
@@ -70,22 +83,8 @@ function listenerBuilder(){
                     		{"name" : playerList[i]}
                     	])
                 );
-                    
-
-                // wyswietl odpowiedz
-                function checkServerAnswer(response){
-                    if(response == "null"){
-                        console.log("player2 reject invitation");
-                        document.getElementById("listOfPlayers").style.display = "block";
-                        document.getElementById("answer").style.display = "none"; 
-                        //refreshPlayers = setInterval( getPlayerList, 2000);
-                    }else{
-                        console.log("player2 accept invitation");
-                        // zmien widok
-                    }
-                }
             }, true);
-            });
+       });
     }
     for( p of playerListeners){
         p();
@@ -93,6 +92,22 @@ function listenerBuilder(){
     
 }
 
+// Listenery decyzji YES?NO gracza
+document.getElementById("opponentYes").addEventListener("click", () => {
+	stompClientWS.send("/answer", 
+			{},
+			JSON.stringify([
+				{"name": playerName}, {"name":document.getElementById("opponent").value}
+			]));
+});
+document.getElementById("opponentNo").addEventListener("click", () => {
+	stompClientWS.send("/answer", 
+			{},
+			JSON.stringify([
+				{"name": playerName}, {"name": "reject"}
+			]));
+	document.getElementById("askPlayer").style.display = "none";
+});
 
 function dottedAnimation(){
     dateNow++;
@@ -106,6 +121,6 @@ function dottedAnimation(){
             }
         document.getElementById("dottedWait").innerHTML = dotted;
     }else{
-        //refreshPlayers = setInterval( getPlayerList, 2000);
+        refreshPlayers = setInterval( getPlayerList, 2000);
     }
 }

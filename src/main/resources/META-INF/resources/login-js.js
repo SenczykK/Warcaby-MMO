@@ -11,7 +11,7 @@ document.getElementById("submit").addEventListener("click", () => {
     	let message = JSON.parse(request.response);
     	if( message == "Logged in..."){
     		window.sessionStorage.setItem("playerSessionName", document.getElementById("inbox").value)
-    		window.open("/waitingRoom.html");
+    		window.open("/waitingRoom.html", "_top");
     	} else if( message == "Try different player name"){
     		document.getElementById("info").innerHTML = "Nazwa zajeta. Sproboj ponownie."
     	} else {
