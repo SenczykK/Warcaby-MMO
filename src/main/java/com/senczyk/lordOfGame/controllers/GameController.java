@@ -41,16 +41,7 @@ public class GameController {
 		// TO DO
 		//startedGames = GamesRepo.findAll();
 	}
-	
-	@MessageMapping("/get") //receive message STOMP endpoint
-	@SendTo("/get/messages")  // messageBroker /messages (all subscribes get the message)
-	public String send(String message) throws Exception{
-		System.out.println(message);
-		return gson.toJson(startedGames.get(0));
-	}
-	
-	
-	/////////////////////////////////////////////////////////////////////
+
 	@PostMapping("/setBoard")
 	public void searchGameAndUpdate(@RequestBody String gameJson, HttpServletResponse responseIdGame) {
 		

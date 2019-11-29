@@ -11,7 +11,7 @@ public class PlayerEntity {
 	@Id
 	private String name;
 	
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "playerId")
+	@OneToMany( mappedBy = "playerId")
 	private List<PawEntity> paws;
 	
 	public PlayerEntity() {  }

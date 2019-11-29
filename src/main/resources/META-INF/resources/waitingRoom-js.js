@@ -8,30 +8,37 @@ document.getElementById("playerSessionName").innerHTML = playerName;
 let dateNow = 0;
 //setInterval( dottedAnimation, 2000);
 // ustawiam pobieranie listy graczy dostepnych
-let refreshPlayers ;// = setInterval( getPlayerList, 2000);
-
-let stompClientWS = Stomp.client("ws://localhost:8080/get/Board1");
-stompClientWS.connect({"Access-Control-Allow-Origin":"*"}, function(frame) {
-    setConnected(true);
-    console.log('Connected: ' + frame);
-    stompClientWS.subscribe('/get/messages', function(messageOutput) {
-        console.log(JSON.parse(messageOutput.body));
-    });
-});
 
 
+let stompClientWS = Stomp.client("ws://localhost:8080/getPlayers/websocket");
+stompClientWS.connect(
+		{"Access-Control-Allow-Origin":"*"}, 
+		function(frame) {
+			stompClientWS.subscribe('/ws/getPlayers', function(messageOutput) {
+					updatePlayerList(messageOutput.body);
+			});
+			stompClientWS.subscribe('/ws/askPlayer', function(messageOutput) {
+				
+				//console.log(JSON.parse(messageOutput.body));
+			});
+			stompClientWS.subscribe('/ws/listener', function(messageOutput) {
+				let players = JSON.parse(messageOutput.body);
+				console.log(players)
+				if( playerName == players[0] ){
+					console.log("chcesz zagrac z "+players[1]+" ?");
+				}
+				//console.log(JSON.parse(messageOutput.body));
+			});
+		}
+);
 
-function getPlayerList(){
-    try {
-        let request = new XMLHttpRequest();
-        request.open("GET", "http://localhost:8080/getPlayerNameList", false);
-        request.send(null);
-        request.onreadystatechange = updatePlayerList(request.response);
-    } catch (error) {
-        console.log(error)
-    }
+let refreshPlayers = setInterval( () => {
+	if( stompClientWS.connect ){
+		stompClientWS.send("/getPlayers", {"playerName":playerName}, "");
+	}
+}, 5000); 
 
-    function updatePlayerList(json){
+	function updatePlayerList(json){
         playerList = JSON.parse(json);
         document.getElementById("avaliable").innerHTML = "";
 
@@ -41,7 +48,7 @@ function getPlayerList(){
         }
         listenerBuilder();
     }
-}
+
 
 let playerListeners = [];
 function listenerBuilder(){
@@ -55,23 +62,16 @@ function listenerBuilder(){
                 document.getElementById("answer").style.display = "block"; 
                 // zatrzymaj pobieranie graczy
                 clearTimeout(refreshPlayers);
+                
                 // wyslij do serwera, aby odpytac gracza
-                try{
-                    let request = new XMLHttpRequest();
-                    request.open("POST", "http://localhost:8080/askPlayer", false);
-                    let players = [
-                        {
-                            "name": playerName
-                        },
-                        {
-                            "name" : playerList[i]
-                        }
-                    ]
-                    request.send(JSON.stringify(players));
-                    request.onreadystatechange = checkServerAnswer(request.response); //check server answeer
-                }catch(e){
-                    console.log("Error when ask player to play")
-                }
+                stompClientWS.send("/askPlayer",
+                    	{}, JSON.stringify([
+                    		{"name" : playerName},
+                    		{"name" : playerList[i]}
+                    	])
+                );
+                    
+
                 // wyswietl odpowiedz
                 function checkServerAnswer(response){
                     if(response == "null"){

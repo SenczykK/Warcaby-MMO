@@ -1,5 +1,6 @@
 package com.senczyk.lordOfGame.controllers;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 import java.util.stream.Collectors;
@@ -8,12 +9,16 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.senczyk.lordOfGame.entities.*;
 
 @CrossOrigin
@@ -27,7 +32,9 @@ public class MessageController {
 	private PlayerListRepository playerListRepo;
 	@Autowired
 	private GamesRepository gamesRepo;
-	
+	@Autowired
+	private SimpMessagingTemplate msgTemplate;
+
 	Gson gson = new Gson();
 	
 	@PostConstruct
@@ -37,16 +44,27 @@ public class MessageController {
 		// startedGames from DB
 		
 	}
+	@MessageMapping("/startGame")
+	public String startGameAtServer() {
+		
+		return "";
+	}
 	
-	@MessageMapping("/askPlayer/{player1}/{player2}")
+	@MessageMapping("/askPlayer")
 	@SendTo("/ws/askPlayer")
-	public String askPlayerToPlay(@PathVariable("player1") String player1Name, @PathVariable("player1") String player2Name) {
-		System.out.println("Get message:"+player1Name+" "+player2Name);
-		if(player1Name.isEmpty() && player2Name.isEmpty()) {
+	public String askPlayerToPlay(@RequestBody String data, String choise) {
+
+		Type listType = new TypeToken<ArrayList<PlayerEntity>>(){}.getType();
+		List<PlayerEntity> temp = gson.fromJson(data, listType);
+		
+		if(temp.get(0).getName().isEmpty() && temp.get(1).getName().isEmpty()) {
 			System.out.println("Message error: no players");
-			return "Message error: no players";
+			return gson.toJson("Message error: no players");
 		} else {
-			return "Starting new game...";
+			msgTemplate.convertAndSend("/ws/listener", gson.toJson(temp) );
+			
+			//return YES/NO
+			return gson.toJson("asking and Starting new game...");
 		}
 	}
 	
@@ -75,7 +93,9 @@ public class MessageController {
 	@MessageMapping("/getPlayers")
 	@SendTo("/ws/getPlayers")
 	public String sendPlayersList() {
-		playerList = playerListRepo.findAll();
-		return gson.toJson(playerList);
+
+		return gson.toJson(playerListRepo.findAll().stream()
+				.map( p -> {return p.getName();})
+				.collect(Collectors.toList()));
 	}
 }
