@@ -1,0 +1,57 @@
+.header{
+    margin: 0 auto;
+    color: black;
+    width: 800px;
+    border: 2px solid red;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+.map{
+    border: 2px solid red;
+    margin: 0 auto;
+    width: 800px;
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+.info{
+    border: 2px solid red;
+    background-color: darkgrey;
+    display: flex;
+    flex-direction: column;
+    width: 377px;
+    margin-left: 10px;
+}
+.playersTable{
+    border: 2px solid red;
+    height: 100px;
+}
+.playersTable h4, .chat h4{
+    background-color: rgb(133, 133, 133);
+    padding: 10px;
+    margin: 0;
+}
+.chat{
+    border: 2px solid red;
+    height: 290px;
+}
+/* ------------------------- */
+/*  PAWNS                    */
+
+.board{
+    position: relative;
+    background-image: url('./board.png');
+    width: 400px;
+    height: 400px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+.pawns img{
+    position: absolute;
+    width: 50px;
+    height: 50px;
+}

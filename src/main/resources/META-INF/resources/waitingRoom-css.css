@@ -1,0 +1,54 @@
+.header{
+    margin: 0 auto;
+    color: black;
+    width: 660px;
+    border: 2px solid red;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+.header h1{
+    margin-right: 10px;
+}
+.body{
+    border: red 2px solid;
+    color: black;
+    width: 660px;
+    padding: 20px;
+    margin: 0 auto;
+}
+.body #intro{
+    font-size: 20px;
+}
+#avaliable{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+.playerList{
+    border: dotted 2px red;
+    font-size: 20px;
+    padding: 10px;
+}
+.playerList:hover{
+    background-color: rgb(219, 219, 219);
+    border: dotted 2px red;
+    font-size: 20px;
+    padding: 10px;
+}
+.answer{
+    display: flex;
+    flex-direction: row;
+    border: red 2px solid;
+    color: black;
+    width: 660px;
+    padding: 20px;
+    font-size: 20px;
+}
+.answer div, #dottedWait{
+    margin: 0;
+    width: fit-content;
+}

@@ -1,0 +1,60 @@
+
+    .header{
+        margin: 0 auto;
+        width: 660px;
+        display: flex;
+        flex-direction: row;
+        border: red 2px solid;
+        justify-content: center;
+    }
+    .header img{
+        margin: 5px;
+        width: 80px;
+    }
+    .header h1{
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .form{
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        border: rgb(255, 72, 0) 2px solid;
+        justify-content: center;
+        width: 660px;
+    }
+    .form .loginbox{
+        margin: 0 auto;
+        margin-bottom: 20px;
+    }
+    .form .loginbox p{
+        font-size: 20px;
+    }
+    .form .loginbox #inbox{
+        border: none;
+        padding: 2px;
+        border-bottom: black 2px solid;
+        background: rgb(255, 253, 161);
+        width: 300px;
+        height: 50px;
+        font-size: 30px;
+    }
+    .form .loginbox #submit{
+        background: rgb(170, 0, 0);
+        border: rgb(112, 0, 0);
+        color: white;
+        border-radius: 30px;
+        padding: 20px;
+        font-size: 20px;
+        width: 300px;
+    }
+    .form .loginbox #submit:hover{
+        background: rgb(223, 0, 0);
+        border: rgb(112, 0, 0);
+        color: white;
+        border-radius: 30px;
+        padding: 20px;
+        font-size: 20px;
+        width: 300px;
+    }
+
