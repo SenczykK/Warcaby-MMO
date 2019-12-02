@@ -8,6 +8,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 @Entity
 @Table(name="games")
 public class GameEntity {
@@ -27,6 +29,8 @@ public class GameEntity {
 	public GameEntity(PlayerEntity player1, PlayerEntity player2){
 		this.player1 = player1;
 		this.player2 = player2;
+		player1.setWhiteBlack("white");
+		player2.setWhiteBlack("black");
 		setPawsAtStart();
 	}
 	
@@ -75,6 +79,7 @@ public class GameEntity {
 		pawsTemp.add(new PawEntity( 7, 6 ));
 		
 		player2.setPaws(pawsTemp);
+		
 	}
 
 	public PlayerEntity getPlayer1() {

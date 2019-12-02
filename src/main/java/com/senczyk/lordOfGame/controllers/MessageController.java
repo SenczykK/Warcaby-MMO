@@ -5,14 +5,17 @@ import java.util.*;
 
 import java.util.stream.Collectors;
 
+import javax.websocket.OnOpen;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
-
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
@@ -32,26 +35,19 @@ public class MessageController {
 
 	Gson gson = new Gson();
 	
-	@MessageMapping("/startGame")
-	public String startGameAtServer() {
-		//if get player2 player 1 pair start
-		// if get "reject" return 0;
-		return "";
-	}
-	
+	// Checking an answer to play a game. If accept, save to db new game.
 	@MessageMapping("/answer")
-	@SendTo("/ws/listener")
 	public void sendAnswer(@RequestBody String data) {
 		Type listType = new TypeToken<ArrayList<PlayerEntity>>(){}.getType();
 		List<PlayerEntity> temp = gson.fromJson(data, listType);
-		System.out.println("/answer "+data);
+		
 		// check opponent decision
-		if( temp.get(1).getName().contentEquals("reject") ) {
+		if( temp.get(2).getName().contentEquals("reject") ) {
 			msgTemplate.convertAndSend("/ws/listener", data );
-			System.out.println("Usuwam zapytanie");
+			System.out.println("Usuwam zapytanie graczy "+temp);
 		} else {
-			System.out.println("Rozpoczynam gre");
-			// start new game
+			gamesRepo.save(new GameEntity( temp.get(0), temp.get(1)));
+			msgTemplate.convertAndSend("/ws/listener", data);
 		}
 	}
 	
@@ -66,17 +62,38 @@ public class MessageController {
 			//msgTemplate.convertAndSend("/ws/listener", gson.toJson(temp) );
 		} else {
 			//wysyłam pytanie do 2go gracza
-			System.out.println("Wysylam do gracza "+temp.get(1).getName());
+			System.out.println("Gracz "+temp.get(0).getName()+" wyzywa gracza "+temp.get(1).getName() );
 			msgTemplate.convertAndSend("/ws/listener", gson.toJson(temp) );
 		}
 	}
 	
 	@MessageMapping("/getGame")
 	@SendTo("/ws/getGame")
-	public String sendGame(String m) {
-		PlayerEntity players = new PlayerEntity();
-		players = gson.fromJson(m, PlayerEntity.class);
-		final String name = new String(players.getName());
+	public String sendGame(String data) {
+		// DO TESTOW
+		if( gamesRepo.count() <= 0) {
+			PlayerEntity pe = new PlayerEntity("TomekW");
+			pe.setWhiteBlack("white");
+			//playerListRepo.save(pe);
+			PlayerEntity pe1 = new PlayerEntity("TomekB");
+			pe1.setWhiteBlack("black");
+			//playerListRepo.save(pe1);
+			gamesRepo.save(new GameEntity( pe, pe1));
+		}
+		
+		Type listType = new TypeToken<ArrayList<PlayerEntity>>(){}.getType();
+		List<PlayerEntity> temp = gson.fromJson(data, listType);
+		//List<GameEntity> resultGame = gamesRepo.findAll().stream().filter( g ->  g.getPlayer1().getName().contentEquals(temp.get(0).getName()) ).collect(Collectors.toList());
+		List<GameEntity> resultGame = gamesRepo.findAll().stream().filter( g ->  g.getPlayer1().getName().contentEquals("TomekW") ).collect(Collectors.toList());
+		System.out.println("try to stream");
+		resultGame.stream().forEach( t -> {
+			System.out.println("Game:");
+			System.out.println("Player1:"+t.getPlayer1().getName()+" "+t.getPlayer1().getWhiteBlack());
+			System.out.println("Player2:"+t.getPlayer2().getName()+" "+t.getPlayer2().getWhiteBlack());
+		});
+		
+		return gson.toJson(resultGame);
+		/*final String name = new String(players.getName());
 		// get in message a names of players
 		System.out.println("Looking a game for "+name+" player...");
 		List<GameEntity> result = gamesRepo.findAll().stream().filter( game -> 
@@ -90,13 +107,13 @@ public class MessageController {
 		List<PawEntity> resultPaws = new LinkedList<>();
 		resultPaws.addAll(result.get(0).getPlayer1().getPaws());
 		resultPaws.addAll(result.get(0).getPlayer2().getPaws());
-		return gson.toJson(resultPaws);
+		return gson.toJson(resultPaws);*/
 	}
 	
 	@MessageMapping("/getPlayers")
 	@SendTo("/ws/getPlayers")
 	public String sendPlayersList() {
-
+		
 		return gson.toJson(playerListRepo.findAll().stream()
 				.map( p -> {return p.getName();})
 				.collect(Collectors.toList()));

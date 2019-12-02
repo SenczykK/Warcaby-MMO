@@ -7,7 +7,7 @@ let blackPositions = [{ x:5, y:0 }, { x:5, y:2 }, { x:5, y:4 }, { x:5, y:6 },
     { x:7, y:0 }, { x:7, y:2 }, { x:7, y:4 }, { x:7, y:6 }];
 
 // Pawn Class
-class Pawn{
+/*class Pawn{
     x; y;
     zbity;
 
@@ -22,13 +22,17 @@ class Pawn{
     get _srcBlack(){
         return this._srcBlack;
     }
-} //-------- Pawn Class
+}*/ //-------- Pawn Class
+let playerName = window.sessionStorage.getItem("playerSessionName");
+let opponentName = window.sessionStorage.getItem("opponent");
+let whiteBlack = window.sessionStorage.getItem("whiteBlack");
 
+document.getElementById("players").innerHTML = playerName+ " "+opponentName;
 // Declaration of new object Pawn
 let whiteList = [], blackList = [];
 for(let i=0; i<12; i++){ 
-    whiteList.push( new Pawn(whitePositions[i].x, whitePositions[i].y) );
-    blackList.push( new Pawn(blackPositions[i].x, blackPositions[i].y) );
+    whiteList.push( {"x":whitePositions[i].x, "y":whitePositions[i].y} );	
+    blackList.push( {"x":blackPositions[i].x, "y":blackPositions[i].y} );
 }
 // Declaration of const px/square on board
 const square = 50;
@@ -37,30 +41,27 @@ const srcWhite = "white.png";
 const srcBlack = "black.png";
 
 // START
-//setPawnsAtStartPosition()
+setPawnsAtStartPosition()
 
-//setInterval( drawPawnsSprites, 1000);
-let stompClientWS = Stomp.client("ws://localhost:8080/get/Board1");
+setInterval( drawPawnsSprites, 1000);
+let stompClientWS = Stomp.client("ws://localhost:8080/getGame/websocket");
 stompClientWS.connect({"Access-Control-Allow-Origin":"*"}, function(frame) {
-    setConnected(true);
-    console.log('Connected: ' + frame);
-    stompClientWS.subscribe('/get/messages', function(messageOutput) {
-        console.log(JSON.parse(messageOutput.body));
+    stompClientWS.subscribe('/ws/getGame', function(messageOutput) {
+    	
+//    	for(let i=0; i<12; i++){ 
+//    	    whiteList[i] = {"x":whitePositions[i].x, "y":whitePositions[i].y};	
+//    	    blackList[i] = {"x":blackPositions[i].x, "y":blackPositions[i].y};
+//    	}
+    	console.log(JSON.parse(messageOutput.body));
     });
 });
+
 function drawPawnsSprites(){
-    try {
-        let request = new XMLHttpRequest();
-        request.open("GET", "http://localhost:8080/getBoard?playerName="+"Kamil", false); //Player session name
-        request.send(null);
-        request.onreadystatechange = updateBoard(request.response);
-    } catch (error) {
-        console.log(error)
-    }
+	stompClientWS.send("/getGame", {}, JSON.stringify([{"name": playerName}, {"name": opponentName}]));
 
     function updateBoard(data){
         let newBoardJSON = JSON.parse(data);
-        console.log(Array.from(newBoardJSON.player1.paws))
+        
         whitePositions = Array.from(newBoardJSON.player1.paws);
         blackPositions = Array.from(newBoardJSON.player2.paws);
         

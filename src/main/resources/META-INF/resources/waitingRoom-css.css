@@ -47,6 +47,7 @@
     width: 660px;
     padding: 20px;
     font-size: 20px;
+    margin: 0 auto;
 }
 .answer div, #dottedWait{
     margin: 0;

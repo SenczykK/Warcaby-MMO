@@ -14,6 +14,9 @@ public class PlayerEntity {
 	@OneToMany( mappedBy = "playerId")
 	private List<PawEntity> paws;
 	
+	@Column(name = "white_black")
+	private String whiteBlack;
+	
 	public PlayerEntity() {  }
 	
 	public PlayerEntity(String name){
@@ -35,4 +38,13 @@ public class PlayerEntity {
 	public void setPaws(List<PawEntity> paws) {
 		this.paws = paws;
 	}
+
+	public String getWhiteBlack() {
+		return whiteBlack;
+	}
+
+	public void setWhiteBlack(String whiteBlack) {
+		this.whiteBlack = whiteBlack;
+	}
+	
 }
