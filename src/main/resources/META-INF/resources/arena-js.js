@@ -6,27 +6,12 @@ let blackPositions = [{ x:5, y:0 }, { x:5, y:2 }, { x:5, y:4 }, { x:5, y:6 },
     { x:6, y:1 }, { x:6, y:3 }, { x:6, y:5 }, { x:6, y:7 },
     { x:7, y:0 }, { x:7, y:2 }, { x:7, y:4 }, { x:7, y:6 }];
 
-// Pawn Class
-/*class Pawn{
-    x; y;
-    zbity;
-
-    constructor(x, y){
-        this.zbity = false;
-        this.x = x;
-        this.y = y;
-    }
-    get _srcWhite(){
-        return this._srcWhite;
-    }
-    get _srcBlack(){
-        return this._srcBlack;
-    }
-}*/ //-------- Pawn Class
 let playerName = window.sessionStorage.getItem("playerSessionName");
 let opponentName = window.sessionStorage.getItem("opponent");
 let whiteBlack = window.sessionStorage.getItem("whiteBlack");
-
+let whiteBlackBool;
+if( whiteBlack == "white") whiteBlackBool = true;
+if( whiteBlack == "black") whiteBlackBool = false;
 document.getElementById("players").innerHTML = playerName+ " "+opponentName;
 // Declaration of new object Pawn
 let whiteList = [], blackList = [];
@@ -44,16 +29,15 @@ const srcBlack = "black.png";
 setPawnsAtStartPosition()
 
 setInterval( drawPawnsSprites, 1000);
-let stompClientWS = Stomp.client("ws://localhost:8080/getGame/websocket");
+let stompClientWS = Stomp.client("ws://localhost:8080/movement/websocket");
 stompClientWS.connect({"Access-Control-Allow-Origin":"*"}, function(frame) {
-    stompClientWS.subscribe('/ws/getGame', function(messageOutput) {
+    stompClientWS.subscribe('/ws/lastMove', function(messageOutput) {
+    	console.log(messageOutput.header)
     	
-//    	for(let i=0; i<12; i++){ 
-//    	    whiteList[i] = {"x":whitePositions[i].x, "y":whitePositions[i].y};	
-//    	    blackList[i] = {"x":blackPositions[i].x, "y":blackPositions[i].y};
-//    	}
+    	whiteBlackBool = true;
     	console.log(JSON.parse(messageOutput.body));
     });
+    
 });
 
 function setDropDown(){
@@ -63,8 +47,10 @@ function setDropDown(){
     let mouse;
 
     for(let i=0; i<12; i++){
-        setterW(i);
-        setterB(i);
+    	if( whiteBlack == "white")
+    		setterW(i);
+    	if( whiteBlack == "black")
+    		setterB(i);
     }
 
     function setterW(i){
@@ -85,8 +71,22 @@ function setDropDown(){
         });
         whiteList[i].DOMelement.addEventListener( "mouseup", (e) => {
             whiteList[i].DOMelement.style.backgroundColor = "transparent";
+            console.log("!!!!!!!!!!!!!!!!")
             isMouseDown = false;
             whiteList[i].DOMelement.style.zIndex = 1;
+            stompClientWS.send("/movement", {}, JSON.stringify([
+            	{"player1": playerName},
+            	{"player2": opponentName},
+            	{ last : {
+            		"x" : whiteList[i].x*square,
+            		"y" : whiteList[i].y*square
+            	}},
+            	{ newPaw : {
+            		"x" : e.clientX + mouse.x +"px",
+            		"y" : e.clientY + mouse.y +"px"
+            	}}
+            ]));
+            whiteBlackBool = false;
         });
     }
     function setterB(i){
@@ -109,12 +109,26 @@ function setDropDown(){
             blackList[i].DOMelement.style.backgroundColor = "transparent";
             isMouseDown = false;
             blackList[i].DOMelement.style.zIndex = 1;
+            console.log("!!!!!!!!!!!!!!!!")
+            stompClientWS.send("/movement", {}, JSON.stringify([
+            	{"player1": playerName},
+            	{"player2": opponentName},
+            	{ last : {
+            		"x" : whiteList[i].x*square,
+            		"y" : whiteList[i].y*square
+            	}},
+            	{ newPaw : {
+            		"x" : e.clientX + mouse.x +"px",
+            		"y" : e.clientY + mouse.y +"px"
+            	}}
+            ]));
+            whiteBlackBool = false;
         });
     }
 }
 
 function drawPawnsSprites(){
-	stompClientWS.send("/getGame", {}, JSON.stringify([{"name": playerName}, {"name": opponentName}]));
+	//stompClientWS.send("/getGame", {}, JSON.stringify([{"name": playerName}, {"name": opponentName}]));
 
     function updateBoard(data){
         let newBoardJSON = JSON.parse(data);
@@ -128,6 +142,8 @@ function drawPawnsSprites(){
             divPawns.innerHTML += "<img class=\"pawnWhite\" src=\""+srcWhite+"\" style=\"left:"+whiteList[i].x*square+"px;top:"+whiteList[i].y*square+"px;\" />";
             divPawns.innerHTML += "<img class=\"pawnWhite\" src=\""+srcBlack+"\" style=\"left:"+blackList[i].x*square+"px;top:"+blackList[i].y*square+"px;\" />";
         }
+        if( whiteBlackBool == true )
+        setDropDown();
     }
 }
 

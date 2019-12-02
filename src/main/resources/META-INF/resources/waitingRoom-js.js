@@ -8,7 +8,7 @@ let playerName = window.sessionStorage.getItem("playerSessionName");
 document.getElementById("playerSessionName").innerHTML = playerName;
 
 let dateNow = 0;
-
+let opponentName;
 let stompClientWS = Stomp.client("ws://localhost:8080/getPlayers/websocket");
 stompClientWS.connect(
 		{"Access-Control-Allow-Origin":"*"}, 
@@ -21,12 +21,15 @@ stompClientWS.connect(
 			// Listener do decyzji do nowej gry
 			stompClientWS.subscribe('/ws/listener', function(messageOutput) {
 
+				
 				let players = JSON.parse(messageOutput.body);
-				if(players[0].name == playerName && players[1].name == document.getElementById("opponent").value && players[2].name == "accept" ){
+				console.log(players[0].name +" "+ document.getElementById("opponent").value )
+				if(players[1].name == playerName && players[0].name == opponentName && players[2].name == "accept" ){
+					console.log("Accepted game")
 					window.sessionStorage.setItem("opponent", players[1].name);
 					window.sessionStorage.setItem("whiteBlack", "black");
 					window.open("/arena.html", "_top");
-					console.log("starting game..")
+					
 				}
 				if(players[1].name == playerName  && players[2].name == "reject") {
 					console.log("zapytanie odrzucone");
@@ -35,7 +38,7 @@ stompClientWS.connect(
 					document.getElementById("askPlayer").style.display = "none";
 					document.getElementById("listOfPlayers").style.display = "block";
 	                document.getElementById("answer").style.display = "none"; 
-	                // TODO subscribe /ws/askPlayer
+	               
 					return 0;
 				}
 				if( playerName == players[1].name && players[2].name == "question"){
@@ -43,6 +46,7 @@ stompClientWS.connect(
 					document.getElementById("reject").style.display = "none";
 					document.getElementById("askPlayer").style.display = "block";
 					document.getElementById("listOfPlayers").style.display = "none";
+					opponentName = players[0].name;
 					document.getElementById("opponent").value = players[0].name;
 					document.getElementById("opponent").innerHTML = players[0].name;
 					document.getElementById("opponent").style.weight = "bold";
@@ -59,7 +63,9 @@ document.getElementById("opponentYes").addEventListener("click", () => {
 			JSON.stringify([
 				{"name": playerName}, {"name":document.getElementById("opponent").value}, {"name": "accept"}
 			]));
+	window.sessionStorage.setItem("opponent", document.getElementById("opponent").value);
 	window.sessionStorage.setItem("whiteBlack", "white");
+	window.open("/arena.html", "_top");
 });
 document.getElementById("opponentNo").addEventListener("click", () => {
 	stompClientWS.send("/answer", 

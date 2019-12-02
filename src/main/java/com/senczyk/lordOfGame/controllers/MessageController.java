@@ -5,17 +5,13 @@ import java.util.*;
 
 import java.util.stream.Collectors;
 
-import javax.websocket.OnOpen;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
@@ -67,19 +63,18 @@ public class MessageController {
 		}
 	}
 	
-	@MessageMapping("/getGame")
-	@SendTo("/ws/getGame")
+	@MessageMapping("/movement")
+	@SendTo("/ws/lastMove")
 	public String sendGame(String data) {
-		// DO TESTOW
-		if( gamesRepo.count() <= 0) {
-			PlayerEntity pe = new PlayerEntity("TomekW");
-			pe.setWhiteBlack("white");
-			//playerListRepo.save(pe);
-			PlayerEntity pe1 = new PlayerEntity("TomekB");
-			pe1.setWhiteBlack("black");
-			//playerListRepo.save(pe1);
-			gamesRepo.save(new GameEntity( pe, pe1));
-		}
+		
+		System.out.println(gson.fromJson(data, Movement.class));
+		
+		
+		
+		
+		
+		return gson.toJson("");
+		/*
 		
 		Type listType = new TypeToken<ArrayList<PlayerEntity>>(){}.getType();
 		List<PlayerEntity> temp = gson.fromJson(data, listType);
@@ -92,7 +87,7 @@ public class MessageController {
 			System.out.println("Player2:"+t.getPlayer2().getName()+" "+t.getPlayer2().getWhiteBlack());
 		});
 		
-		return gson.toJson(resultGame);
+		
 		/*final String name = new String(players.getName());
 		// get in message a names of players
 		System.out.println("Looking a game for "+name+" player...");
@@ -108,6 +103,18 @@ public class MessageController {
 		resultPaws.addAll(result.get(0).getPlayer1().getPaws());
 		resultPaws.addAll(result.get(0).getPlayer2().getPaws());
 		return gson.toJson(resultPaws);*/
+	}
+	// CLASS to recive movements
+	class Movement {
+		String player1;
+		String player2;
+		Pins last;
+		Pins newPaw;
+		
+		class Pins{
+			int x;
+			int y;
+		}
 	}
 	
 	@MessageMapping("/getPlayers")

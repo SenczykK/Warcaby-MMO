@@ -11,7 +11,7 @@ public class PlayerEntity {
 	@Id
 	private String name;
 	
-	@OneToMany( mappedBy = "playerId")
+	@Transient
 	private List<PawEntity> paws;
 	
 	@Column(name = "white_black")

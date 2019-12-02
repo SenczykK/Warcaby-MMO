@@ -171,7 +171,7 @@
   
       Client.prototype.debug = function(message) {
         var ref;
-        return void 0;//typeof window !== "undefined" && window !== null ? (ref = window.console) != null ? ref.log(message) : void 0 : void 0;
+        return typeof window !== "undefined" && window !== null ? (ref = window.console) != null ? ref.log(message) : void 0 : void 0;
       };
   
       now = function() {
