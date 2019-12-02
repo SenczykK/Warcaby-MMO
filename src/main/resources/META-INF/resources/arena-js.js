@@ -56,6 +56,63 @@ stompClientWS.connect({"Access-Control-Allow-Origin":"*"}, function(frame) {
     });
 });
 
+function setDropDown(){
+    
+    //zabezpieczenie przed kilkoma klikami
+    let isMouseDown = false;
+    let mouse;
+
+    for(let i=0; i<12; i++){
+        setterW(i);
+        setterB(i);
+    }
+
+    function setterW(i){
+        whiteList[i].DOMelement = document.getElementById("pawnWhite"+i);
+        whiteList[i].DOMelement.addEventListener( "mousedown", (e) => {
+            whiteList[i].DOMelement.style.backgroundColor = "red";
+            isMouseDown = true;
+            whiteList[i].DOMelement.style.zIndex = 1000;
+            mouse = {x: whiteList[i].DOMelement.offsetLeft - e.clientX,
+                y: whiteList[i].DOMelement.offsetTop - e.clientY};
+        });
+        whiteList[i].DOMelement.addEventListener( "mousemove", (e) => {
+            e.preventDefault();
+            if( isMouseDown ){
+                whiteList[i].DOMelement.style.left = e.clientX + mouse.x  +"px";
+                whiteList[i].DOMelement.style.top = e.clientY + mouse.y  +"px";
+            }
+        });
+        whiteList[i].DOMelement.addEventListener( "mouseup", (e) => {
+            whiteList[i].DOMelement.style.backgroundColor = "transparent";
+            isMouseDown = false;
+            whiteList[i].DOMelement.style.zIndex = 1;
+        });
+    }
+    function setterB(i){
+        blackList[i].DOMelement = document.getElementById("pawnBlack"+i);
+        blackList[i].DOMelement.addEventListener( "mousedown", (e) => {
+            blackList[i].DOMelement.style.backgroundColor = "red";
+            isMouseDown = true;
+            blackList[i].DOMelement.style.zIndex = 1000;
+            mouse = {x: blackList[i].DOMelement.offsetLeft - e.clientX,
+                y: blackList[i].DOMelement.offsetTop - e.clientY};
+        });
+        blackList[i].DOMelement.addEventListener( "mousemove", (e) => {
+            e.preventDefault();
+            if( isMouseDown ){
+                blackList[i].DOMelement.style.left = e.clientX + mouse.x  +"px";
+                blackList[i].DOMelement.style.top = e.clientY + mouse.y  +"px";
+            }
+        });
+        blackList[i].DOMelement.addEventListener( "mouseup", (e) => {
+            blackList[i].DOMelement.style.backgroundColor = "transparent";
+            isMouseDown = false;
+            blackList[i].DOMelement.style.zIndex = 1;
+        });
+    }
+}
+
 function drawPawnsSprites(){
 	stompClientWS.send("/getGame", {}, JSON.stringify([{"name": playerName}, {"name": opponentName}]));
 
@@ -84,6 +141,7 @@ function setPawnsAtStartPosition(){
     }
     
 }
+
 
 
 
