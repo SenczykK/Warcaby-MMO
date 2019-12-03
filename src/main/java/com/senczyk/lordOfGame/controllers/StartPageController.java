@@ -1,5 +1,6 @@
 package com.senczyk.lordOfGame.controllers;
 
+import java.time.LocalDate;
 import java.util.function.Predicate;
 
 import javax.servlet.http.*;
@@ -30,6 +31,7 @@ public class StartPageController {
 		
 		Predicate<PlayerEntity>  hasName = p -> p.getName().equals(newPlayer.getName());
 		if( !playerListRepo.findAll().stream().anyMatch(hasName) ) {
+			newPlayer.setLastLogin(LocalDate.now());
 			playerListRepo.save(newPlayer);
 			System.out.println("New player name: "+newPlayer.getName());
 			return gson.toJson("Logged in...");

@@ -23,7 +23,7 @@ stompClientWS.connect(
 
 				
 				let players = JSON.parse(messageOutput.body);
-				console.log(players[0].name +" "+ document.getElementById("opponent").value )
+				console.log(players[0].name +" "+ opponentName )
 				if(players[1].name == playerName && players[0].name == opponentName && players[2].name == "accept" ){
 					console.log("Accepted game")
 					window.sessionStorage.setItem("opponent", players[1].name);

@@ -1,5 +1,6 @@
 package com.senczyk.lordOfGame.entities;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import javax.persistence.*;
@@ -17,11 +18,22 @@ public class PlayerEntity {
 	@Column(name = "white_black")
 	private String whiteBlack;
 	
+	@Column(name = "last_login")
+	private LocalDate lastLogin;
+	
 	public PlayerEntity() {  }
 	
 	public PlayerEntity(String name){
 		this.name = name;
 		paws = new ArrayList<>();
+	}
+
+	public LocalDate getLastLogin() {
+		return lastLogin;
+	}
+
+	public void setLastLogin(LocalDate localDate) {
+		this.lastLogin = localDate;
 	}
 
 	public String getName() {

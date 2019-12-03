@@ -158,6 +158,16 @@ function setPawnsAtStartPosition(){
     
 }
 
+document.getElementById("cancelGame").addEventListener("click",()=>{
+	XMLHttpRequest request = new XMLHttpRequest();
+	request.open("POST", "http://localhost:8080/destroy", false);
+	request.send(JSON.stringify([
+		{ "name": playerName},
+		{ "name": opponentName},
+		{ "decision": "cancel"}
+	]);
+	window.open("/waitingRoom.html", "_top");
+});
 
 
 

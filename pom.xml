@@ -57,6 +57,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- JUnit 5 -->
+		<dependency>
+		<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.5.2</version>
+			<scope>test</scope>
+		</dependency>
 		<!-- spring-websocket -->
 		<dependency>
    		 	<groupId>org.springframework</groupId>

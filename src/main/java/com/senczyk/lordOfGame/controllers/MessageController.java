@@ -1,6 +1,7 @@
 package com.senczyk.lordOfGame.controllers;
 
 import java.lang.reflect.Type;
+import java.time.LocalDate;
 import java.util.*;
 
 import java.util.stream.Collectors;
@@ -120,6 +121,13 @@ public class MessageController {
 	@MessageMapping("/getPlayers")
 	@SendTo("/ws/getPlayers")
 	public String sendPlayersList() {
+		List<PlayerEntity> toDeletePlayerList = playerListRepo.findAll().stream().filter( p -> {
+			if(p.getLastLogin().isBefore(LocalDate.now()))
+				return true;
+			else return false;
+					}).collect(Collectors.toList());
+		
+		playerListRepo.deleteAll(toDeletePlayerList);
 		
 		return gson.toJson(playerListRepo.findAll().stream()
 				.map( p -> {return p.getName();})
