@@ -26,14 +26,13 @@ const srcWhite = "white.png";
 const srcBlack = "black.png";
 
 // START
-setPawnsAtStartPosition()
+drawPawns()
 
-console.log(whiteList)
 let stompClientWS = Stomp.client("ws://localhost:8080/movement/websocket");
 stompClientWS.connect({"Access-Control-Allow-Origin":"*"}, function(frame) {
 	setDropDown();
     stompClientWS.subscribe('/ws/updateGameboard', function(messageOutput) {
-    	console.log("My color:"+whiteBlack)
+    	if(JSON.parse(messageOutput.body).author.name == playerName) return 0;    	
     	updateBoard(messageOutput.body);
     });
 });
@@ -42,21 +41,15 @@ function updateBoard(data){
     let newBoardJSON = JSON.parse(data);
     
     if(whiteBlack == "white"){
-    	whitePositions = Array.from(newBoardJSON.author.paws);
-    	blackPositions = Array.from(newBoardJSON.reciver.paws);
-    }else{
+    	whitePositions = Array.from(newBoardJSON.reciver.paws);
+    	blackPositions = Array.from(newBoardJSON.author.paws);
+    }else if(whiteBlack == "black"){
     	whitePositions = Array.from(newBoardJSON.author.paws);
     	blackPositions = Array.from(newBoardJSON.reciver.paws);
     }
-    
-    let divPawns = document.getElementsByClassName("pawns")[0];
-    divPawns.innerHTML="";
-    for(let i=0; i<12; i++){//do liczby pionków w grze
-        divPawns.innerHTML += "<img class=\"pawnWhite\" id='pawnWhite"+i+"' src=\""+srcWhite+"\" style=\"left:"+whitePositions[i].x*square+"px;top:"+whitePositions[i].y*square+"px;\" />";
-        divPawns.innerHTML += "<img class=\"pawnWhite\" id='pawnBlack"+i+"' src=\""+srcBlack+"\" style=\"left:"+blackPositions[i].x*square+"px;top:"+blackPositions[i].y*square+"px;\" />";
-    }
-    //if( newBoardJSON.reciver == playerName )
+    drawPawns();
     setDropDown();
+    
 }
 
 function setDropDown(){
@@ -79,22 +72,23 @@ function setDropDown(){
             isMouseDown = true;
             whiteList[i].DOMelement.style.zIndex = 1000;
             mouse = {x: whiteList[i].DOMelement.offsetLeft - e.clientX,
-                y: whiteList[i].DOMelement.offsetTop - e.clientY};
+                y: whiteList[i].DOMelement.offsetTop - e.clientY}; 
         });
+        
         whiteList[i].DOMelement.addEventListener( "mousemove", (e) => {
             e.preventDefault();
             if( isMouseDown ){
-                whiteList[i].DOMelement.style.left = e.clientX + mouse.x  +"px";
-                whiteList[i].DOMelement.style.top = e.clientY + mouse.y  +"px";
-                whitePositions[i].x = Math.round((e.clientX + mouse.x)/square);
-                whitePositions[i].y = Math.round((e.clientY + mouse.y)/square);
-                console.log("WL:"+whitePositions[i].x+" "+whitePositions[i].y)
+            	whitePositions[i].x = Math.round((e.clientX + mouse.x)/square);
+            	whitePositions[i].y = Math.round((e.clientY + mouse.y)/square);
+            	whiteList[i].DOMelement.style.left = e.clientX + mouse.x  +"px";
+            	whiteList[i].DOMelement.style.top = e.clientY + mouse.y +"px";
             }
         });
-        whiteList[i].DOMelement.addEventListener( "mouseup", (e) => {
+        whiteList[i].DOMelement.addEventListener( "mouseup", (e) => { 
             whiteList[i].DOMelement.style.backgroundColor = "transparent";
             isMouseDown = false;
             whiteList[i].DOMelement.style.zIndex = 1;
+            drawPawns();
             stompClientWS.send("/movement", {}, JSON.stringify(
             		{"author": { "name": playerName, 
                 				"paws": whitePositions,
@@ -104,9 +98,7 @@ function setDropDown(){
                 				"paws": blackPositions,
                 				"lastMove": [{}]
             					}
-                	}));
-            
-            
+                	})); 
         });
     }
     function setterB(i){
@@ -121,34 +113,32 @@ function setDropDown(){
         blackList[i].DOMelement.addEventListener( "mousemove", (e) => {
             e.preventDefault();
             if( isMouseDown ){
-                blackList[i].DOMelement.style.left = e.clientX + mouse.x  +"px";
-                blackList[i].DOMelement.style.top = e.clientY + mouse.y  +"px";
                 blackPositions[i].x = Math.round((e.clientX + mouse.x)/square);
                 blackPositions[i].y = Math.round((e.clientY + mouse.y)/square);
-                console.log("WL:"+blackPositions[i].x+" "+blackPositions[i].y)
+                blackList[i].DOMelement.style.left = e.clientX + mouse.x  +"px";
+                blackList[i].DOMelement.style.top = e.clientY + mouse.y  +"px";
             }
         });
         blackList[i].DOMelement.addEventListener( "mouseup", (e) => {
             blackList[i].DOMelement.style.backgroundColor = "transparent";
             isMouseDown = false;
             blackList[i].DOMelement.style.zIndex = 1;
+            drawPawns();
             stompClientWS.send("/movement", {}, JSON.stringify(
-    		{"author": { "name": playerName, 
-        				"paws": blackPositions,
-        				"lastMove": [{}]
-        				},
-        	"reciver": { "name": opponentName, 
-        				"paws": whitePositions,
-        				"lastMove": [{}]
-    					}
-        	}
-            ))
-            
+            		{"author": { "name": playerName, 
+                				"paws": blackPositions,
+                				"lastMove": [{}]
+                				},
+                	"reciver": { "name": opponentName, 
+                				"paws": whitePositions,
+                				"lastMove": [{}]
+            					}
+                	}));   
         });
     }
 }
 
-function setPawnsAtStartPosition(){
+function drawPawns(){
     
     let divPawns = document.getElementsByClassName("pawns")[0];
     divPawns.innerHTML="";
