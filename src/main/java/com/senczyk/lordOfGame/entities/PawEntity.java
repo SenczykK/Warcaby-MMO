@@ -19,6 +19,7 @@ public class PawEntity {
 	private int id;
 	private int x;
 	private int y;
+	private boolean alive;
 	private boolean queen;
 	
 	@ManyToOne
@@ -48,6 +49,12 @@ public class PawEntity {
 	}
 	public void setQueen(boolean queen) {
 		this.queen = queen;
+	}
+	public boolean isAlive() {
+		return alive;
+	}
+	public void setAlive(boolean alive) {
+		this.alive = alive;
 	}
 	
 	

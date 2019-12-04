@@ -17,8 +17,7 @@ public class GameMessageController {
 	@SendTo("/ws/updateGameboard")
 	public String updateGameboard(@RequestBody String data) {
 		BoardTemplate board = gson.fromJson(data, BoardTemplate.class);
-		board.printBoardgame();
-		board.printBoardgamePaws();
+	
 		return data;
 	}
 }

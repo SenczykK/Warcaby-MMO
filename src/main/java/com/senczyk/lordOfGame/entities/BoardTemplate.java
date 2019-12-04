@@ -30,14 +30,14 @@ public class BoardTemplate {
 		this.author.getPaws().stream().forEach(p->{
 			System.out.println("Paw:"+p.getX()+" "+p.getY());
 		});
-		//System.out.println("Board:"+this.author.getPaws()+" "+this.reciver.getPaws());
+		
 	}
 
 	private class Player{
 		
 		private String name;
 		private List<PawEntity> paws;
-		private List<PawEntity> lastMove = new ArrayList<>();
+
 		public String getName() {
 			return name;
 		}
@@ -49,12 +49,6 @@ public class BoardTemplate {
 		}
 		public void setPaws(List<PawEntity> paws) {
 			this.paws = paws;
-		}
-		public List<PawEntity> getLastMove() {
-			return lastMove;
-		}
-		public void setLastMove(List<PawEntity> lastMove) {
-			this.lastMove = lastMove;
 		}		
 	}
 }
