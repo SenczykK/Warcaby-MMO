@@ -26,17 +26,14 @@ public class GameController {
 	private PlayerListRepository playerListRepo;
 	
 	Gson gson = new Gson();
-	
-	@PreDestroy
-	private void deleteUsers() {
-		playerListRepo.deleteAll();
-	}
+
 	
 	@PostMapping("/destroy")
 	public void cancelGame(@RequestBody String data) {
-		GameEntity game = gson.fromJson(data, GameEntity.class);
 		
-		System.out.println("/destroy "+data);
+		MessageTemplate message = gson.fromJson(data, MessageTemplate.class);
+		
+		message.printMessage();
 	}
 
 }

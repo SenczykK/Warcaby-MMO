@@ -3,9 +3,9 @@ document.getElementById("submit").addEventListener("click", () => {
     let playerName = {
         "name": document.getElementById("inbox").value
     }
+    
     let request = new XMLHttpRequest();
     request.open("POST", "http://localhost:8080/loginPl", false);
-
     request.setRequestHeader( "playerName", playerName);
     request.onreadystatechange = () => {
     	let message = JSON.parse(request.response);

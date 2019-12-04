@@ -9,6 +9,7 @@ document.getElementById("playerSessionName").innerHTML = playerName;
 
 let dateNow = 0;
 let opponentName;
+// Deklaracja WebSocket'u
 let stompClientWS = Stomp.client("ws://localhost:8080/getPlayers/websocket");
 stompClientWS.connect(
 		{"Access-Control-Allow-Origin":"*"}, 
@@ -20,39 +21,31 @@ stompClientWS.connect(
 			
 			// Listener do decyzji do nowej gry
 			stompClientWS.subscribe('/ws/listener', function(messageOutput) {
-
-				
-				let players = JSON.parse(messageOutput.body);
-				console.log(players[0].name +" "+ opponentName )
-				if(players[1].name == playerName && players[0].name == opponentName && players[2].name == "accept" ){
+				let message = JSON.parse(messageOutput.body);
+				console.log("zapytanie"+message+" "+opponentName)
+				if(message.reciver == playerName && message.author == opponentName && message.option == "accept" ){
 					console.log("Accepted game")
-					window.sessionStorage.setItem("opponent", players[1].name);
+					window.sessionStorage.setItem("opponent", message.author);
 					window.sessionStorage.setItem("whiteBlack", "black");
 					window.open("/arena.html", "_top");
-					
-				}
-				if(players[1].name == playerName  && players[2].name == "reject") {
-					console.log("zapytanie odrzucone");
+				} else
+				if(message.reciver == playerName  && message.option == "reject") {
 					document.getElementById("reject").style.display = "block";
 					document.getElementById("askPlayer").style.display = "none";
 					document.getElementById("askPlayer").style.display = "none";
 					document.getElementById("listOfPlayers").style.display = "block";
 	                document.getElementById("answer").style.display = "none"; 
-	               
-					return 0;
-				}
-				if( playerName == players[1].name && players[2].name == "question"){
-					console.log("chcesz zagrac z "+players[0].name+" ?");
+				} else
+				if(message.reciver == playerName && message.option == "question"){
 					document.getElementById("reject").style.display = "none";
 					document.getElementById("askPlayer").style.display = "block";
 					document.getElementById("listOfPlayers").style.display = "none";
-					opponentName = players[0].name;
-					document.getElementById("opponent").value = players[0].name;
-					document.getElementById("opponent").innerHTML = players[0].name;
+					opponentName = message.author;
+					document.getElementById("opponent").value = message.author;
+					document.getElementById("opponent").innerHTML = message.author;
 					document.getElementById("opponent").style.weight = "bold";
-					
 				}
-			});
+			}); // ---------- end of /ws/listener
 		}
 );
 
@@ -60,9 +53,9 @@ stompClientWS.connect(
 document.getElementById("opponentYes").addEventListener("click", () => {
 	stompClientWS.send("/answer", 
 			{},
-			JSON.stringify([
-				{"name": playerName}, {"name":document.getElementById("opponent").value}, {"name": "accept"}
-			]));
+			JSON.stringify(
+				{"author": playerName, "reciver":document.getElementById("opponent").value, "option": "accept"}
+			));
 	window.sessionStorage.setItem("opponent", document.getElementById("opponent").value);
 	window.sessionStorage.setItem("whiteBlack", "white");
 	window.open("/arena.html", "_top");
@@ -70,9 +63,9 @@ document.getElementById("opponentYes").addEventListener("click", () => {
 document.getElementById("opponentNo").addEventListener("click", () => {
 	stompClientWS.send("/answer", 
 			{},
-			JSON.stringify([
-				{"name": playerName}, {"name": document.getElementById("opponent").value}, {"name": "reject"}
-			]));
+			JSON.stringify(
+				{"author": playerName, "reciver": document.getElementById("opponent").value, "option": "reject"}
+			));
 	document.getElementById("askPlayer").style.display = "none";
 	document.getElementById("listOfPlayers").style.display = "block";
 });
@@ -104,21 +97,16 @@ function updatePlayerList(json){
             if( playerList[i] == playerName) continue;
             playerListeners.push( function(){
                 document.getElementById("playerPlace"+i).addEventListener("click", ()=>{ 
-                    // zmien widok na oczekiwanie na akceptacje
                     document.getElementById("listOfPlayers").style.display = "none";
                     document.getElementById("answer").style.display = "block"; 
-                    // zatrzymaj pobieranie graczy
                     clearTimeout(refreshPlayers);
-                    // TODO unsubscribe /ws/askPlayer
+                    opponentName = playerList[i];
                     dottedAnim = setInterval( dottedAnimation, 2000);
-                    // wyslij do serwera, aby odpytac gracza
-                    stompClientWS.send("/askPlayer",
-                        	{}, JSON.stringify([
-                        		{"name" : playerName},
-                        		{"name" : playerList[i]},
-                        		{"name" : "question"}
-                        	])
-                    );
+                    stompClientWS.send("/askPlayer", {}, JSON.stringify({
+                        		"author" : playerName,
+                        		"reciver" : playerList[i],
+                        		"option" : "question"
+                        	}));
                 }, true);
            });
         }
@@ -128,8 +116,6 @@ function updatePlayerList(json){
         
     }
 }
-
-
 
 function dottedAnimation(){
     dateNow++;
